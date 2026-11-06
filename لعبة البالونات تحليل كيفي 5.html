@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>كيمياء الثانوية العامة - فرقعة البالونات</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0b1329;
+      --card-bg: #111b36;
+      --card-border: #1c3260;
+      --text-main: #ffffff;
+      --text-sub: #94a3b8;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --balloon-border: rgba(255, 255, 255, 0.4);
+    }
+
+    body.light-mode {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --card-border: #cbd5e1;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --balloon-border: rgba(0, 0, 0, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      transition: background-color 0.3s;
+    }
+
+    #game-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--bg-color);
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 13px;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .top-bar-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-badge {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid var(--card-border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    body.light-mode .btn-badge {
+      background: #e2e8f0;
+      color: #0369a1;
+    }
+
+    .designer-banner {
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid var(--accent);
+      color: #38bdf8;
+      text-align: center;
+      padding: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      margin: 4px 12px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+
+    body.light-mode .designer-banner {
+      color: #0284c7;
+      background: #e0f2fe;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 4px 12px;
+      z-index: 10;
+    }
+
+    .stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      text-align: center;
+      padding: 4px 2px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-sub);
+      margin-bottom: 2px;
+    }
+
+    .stat-val {
+      font-size: 12px;
+      font-weight: bold;
+      color: #38bdf8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-skip {
+      background: #ea580c;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .question-box {
+      background: var(--card-bg);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      margin: 4px 12px;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.5;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+      transition: border-color 0.3s;
+    }
+
+    .question-badge {
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: #16a34a;
+      color: white;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .explanation-banner {
+      display: none;
+      margin-top: 6px;
+      font-size: 11.5px;
+      color: #facc15;
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px dashed #eab308;
+      border-radius: 6px;
+      padding: 4px 8px;
+      text-align: right;
+    }
+
+    #game-stage {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .balloon {
+      position: absolute;
+      width: 102px;
+      height: 126px;
+      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 6px 4px;
+      cursor: pointer;
+      box-shadow: inset -5px -5px 12px rgba(0,0,0,0.3), inset 6px 6px 12px rgba(255,255,255,0.4), 0 8px 15px rgba(0,0,0,0.3);
+      border: 1px solid var(--balloon-border);
+      touch-action: manipulation;
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s ease, left 0.4s ease, opacity 0.3s ease;
+    }
+
+    .balloon::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 7px solid currentColor;
+    }
+
+    .balloon::before {
+      content: "";
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      width: 2px;
+      height: 12px;
+      background: #94a3b8;
+    }
+
+    .balloon-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .balloon-text-ar {
+      direction: rtl;
+      unicode-bidi: isolate;
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    .chem-formula {
+      direction: ltr !important;
+      unicode-bidi: isolate !important;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-weight: 700;
+      font-size: 13.5px;
+      letter-spacing: 0.6px;
+      display: inline-block;
+    }
+
+    .balloon.highlight-correct {
+      border: 4px solid #22c55e !important;
+      box-shadow: 0 0 30px #22c55e, inset 0 0 12px #ffffff !important;
+      z-index: 40 !important;
+      animation: pulse-correct 0.6s infinite alternate;
+    }
+
+    .balloon.center-focus {
+      position: absolute !important;
+      top: 45% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) scale(1.3) !important;
+      z-index: 50 !important;
+    }
+
+    .balloon.fade-out {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
+    @keyframes pulse-correct {
+      0% { box-shadow: 0 0 15px #22c55e; }
+      100% { box-shadow: 0 0 35px #22c55e, inset 0 0 10px #ffffff; }
+    }
+
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px 18px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      font-size: 19px;
+      margin-bottom: 10px;
+      color: #38bdf8;
+    }
+
+    .input-text {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+      font-size: 14px;
+      margin: 10px 0;
+      outline: none;
+      text-align: center;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+
+    .option-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-opt {
+      background: #1e293b;
+      color: var(--text-sub);
+      border: 1px solid var(--card-border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-opt.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-action {
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover { background: #0369a1; }
+    .btn-success { background: #16a34a; }
+    .btn-success:hover { background: #15803d; }
+    .btn-purple { background: #7c3aed; }
+    .btn-purple:hover { background: #6d28d9; }
+    .btn-amber { background: #d97706; }
+    .btn-amber:hover { background: #b45309; }
+
+    .loader-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      background: #38bdf8;
+      border-radius: 50%;
+      animation: pulse 1s infinite alternate;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0% { opacity: 0.2; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .advice-box {
+      border-right: 4px solid #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 14px;
+      color: #bae6fd;
+    }
+
+    .hidden { display: none !important; }
+
+    .footer-credits {
+      margin-top: 12px;
+      font-size: 11.5px;
+      color: var(--text-sub);
+    }
+
+    sub, sup {
+      font-size: 0.75em;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+      font-weight: bold;
+    }
+    sub { bottom: -0.28em; }
+    sup { top: -0.48em; }
+
+    #review-modal {
+      text-align: right;
+      max-height: 70vh;
+      overflow-y: auto;
+      margin: 12px 0;
+      padding: 6px;
+    }
+
+    .review-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .review-q {
+      font-weight: bold;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .review-ans {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .review-exp {
+      color: #facc15;
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .highscore-banner {
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid #eab308;
+      color: #facc15;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+
+  <div class="top-bar">
+    <div>🧪 كيمياء الثانوية العامة</div>
+    <div class="top-bar-controls">
+      <button class="btn-badge" id="pause-btn" onclick="togglePauseGame()">⏸️ إيقاف</button>
+      <button class="btn-badge" id="theme-btn" onclick="toggleTheme()">☀️ نهار</button>
+      <button class="btn-badge" id="speed-indicator">⚡ سرعة: بطيء</button>
+    </div>
+  </div>
+
+  <div class="designer-banner">
+    مصمم اللعبة: أ/ عبد الرحمن عبد الله - 01021779644
+  </div>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-box">
+      <div class="stat-label">المستوى</div>
+      <div class="stat-val" id="level-display">1 / 3</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">النقاط</div>
+      <div class="stat-val" id="score-display">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">القلوب</div>
+      <div class="stat-val" id="hearts-display">❤️❤️❤️❤️❤️❤️❤️</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">المتتالية</div>
+      <div class="stat-val" id="streak-display">0/4</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">تخطي (3)</div>
+      <button class="btn-skip" id="skip-btn" onclick="skipQuestion()">تخطي</button>
+    </div>
+  </div>
+
+  <div class="question-box" id="question-box">
+    <div class="question-badge" id="q-number-badge">سؤال 1 / 10</div>
+    <div id="question-text">نص السؤال يظهر هنا...</div>
+    <div class="explanation-banner" id="explanation-banner"></div>
+  </div>
+
+  <div id="game-stage"></div>
+
+  <!-- شاشة التوقف المؤقت -->
+  <div class="screen-overlay hidden" id="pause-screen" style="background: rgba(11, 19, 41, 0.85); backdrop-filter: blur(4px);">
+    <div class="card">
+      <h2>اللعبة متوقفة مؤقتاً ⏸️</h2>
+      <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 14px;">خذ استراحة واستعد للمواصلة!</p>
+      <button class="btn-action btn-success" onclick="togglePauseGame()">▶️ استئناف اللعب</button>
+    </div>
+  </div>
+
+  <!-- شاشة البداية -->
+  <div class="screen-overlay" id="start-screen">
+    <div class="card">
+      <h2>مرحباً بك يا بطل! 👋</h2>
+      
+      <div class="highscore-banner" id="highscore-box">
+        🏆 أعلى رقم قياسي مسجل: <span id="high-score-val">0</span> نقطة
+      </div>
+
+      <p style="font-size: 12.5px; color: var(--text-sub); margin-bottom: 8px;">
+        اختر الإجابة الصحيحة بفرقعة البالونة المناسبة قبل صعودها للأعلى!
+      </p>
+
+      <input type="text" id="player-name-input" class="input-text" placeholder="اكتب اسمك هنا..." value="">
+
+      <div class="settings-row">
+        <span>مظهر الشاشة:</span>
+        <div class="option-group">
+          <button class="btn-opt active" id="mode-dark-btn" onclick="setAppTheme('dark')">داكن</button>
+          <button class="btn-opt" id="mode-light-btn" onclick="setAppTheme('light')">أبيض</button>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span>السرعة:</span>
+        <div class="option-group">
+          <button class="btn-opt active" id="speed-slow-btn" onclick="setGameSpeed('slow')">بطيء</button>
+          <button class="btn-opt" id="speed-med-btn" onclick="setGameSpeed('med')">متوسط</button>
+          <button class="btn-opt" id="speed-fast-btn" onclick="setGameSpeed('fast')">سريع</button>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; color: #38bdf8; margin: 8px 0; text-align: right; line-height: 1.5;">
+        * إجابة صحيحة = +10 نقاط.<br>
+        * البداية بـ 7 قلوب (مرور البالونات أو خطأ = خسارة قلب).<br>
+        * كل 4 إجابات صحيحة متتالية = كسب قلب إضافي (بحد أقصى 10 قلوب).<br>
+        * 3 مستويات وكل مستوى 10 أسئلة عشوائية من بنك الأسئلة الشامل.
+      </div>
+
+      <button class="btn-action" onclick="showPreloaderScreen()">ابدأ التحدي</button>
+      
+      <div class="footer-credits">
+        تصميم: أ/ عبد الرحمن عبد الله | 01021779644
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة الانتظار -->
+  <div class="screen-overlay hidden" id="prep-screen">
+    <div class="card">
+      <h3 style="color: #38bdf8;">اللعبة هتبدأ دلوقتي...</h3>
+      <div class="loader-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="advice-box" id="advice-text">
+        "«التواضع عند الفهم وحسن الخلق مع الزملاء والمعلمين زكاة العلم الحقيقية.»"
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة النهاية -->
+  <div class="screen-overlay hidden" id="end-screen">
+    <div class="card" id="end-card">
+      <h2 style="color: #ef4444;" id="end-title">انتهت اللعبة!</h2>
+      <h3 style="color: #38bdf8; font-size: 16px; margin-bottom: 8px;" id="end-praise">أحسنت يا بطل! 👏</h3>
+      
+      <div style="font-size: 14px; margin: 10px 0; display: flex; justify-content: space-around; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+        <div>مجموع النقاط: <span style="font-size: 18px; font-weight: bold; color: #eab308;" id="final-score">0</span></div>
+        <div>القلوب المتبقية: <span style="font-size: 18px; font-weight: bold; color: #ef4444;" id="final-hearts">0</span> / 10</div>
+      </div>
+
+      <button class="btn-action btn-amber hidden" id="btn-show-mistakes" onclick="toggleMistakesModal()">📖 مراجعة الأسئلة التي أخطأت بها</button>
+
+      <div id="review-modal" class="hidden"></div>
+
+      <button class="btn-action btn-success" onclick="shareScore()">📲 مشاركة النتيجة كرسالة / بوست</button>
+      <button class="btn-action btn-purple" onclick="captureScreenshot()">📸 حفظ لقطة الشاشة على الهاتف</button>
+      <button class="btn-action" onclick="restartGame()">🔄 إعادة المحاولة</button>
+
+      <div class="footer-credits" style="margin-top: 14px; border-top: 1px dashed var(--card-border); padding-top: 8px;">
+        مصمم اللعبة: أ/ عبد الرحمن عبد الله - 01021779644
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* بنك الأسئلة الشامل بالكامل (104 أسئلة كاملة مع التفسيرات) */
+  const questionsDB = {
+    // المستوى الأول: 39 سؤالاً كاملاً
+    level1: [
+      { q: "الغاز الذي يحدث فوراناً ويعكر ماء الجير الرائق لفترة قصيرة مكوناً <span class='chem-formula'>CaCO<sub>3</sub></span> هو:", options: [{ text: "<span class='chem-formula'>CO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>SO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>H<sub>2</sub>S</span>" }], correct: 0, exp: "يتفاعل ثاني أكسيد الكربون مع ماء الجير مكوناً كربونات الكالسيوم شحيحة الذوبان." },
+      { q: "الغاز ذو الرائحة النفاذة الذي يخضر ورقة مبللة بثاني كرومات البوتاسيوم المحمضة بحمض الكبريتيك المركز هو:", options: [{ text: "<span class='chem-formula'>SO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>HCl</span>" }, { text: "<span class='chem-formula'>NO</span>" }], correct: 0, exp: "يختزل غاز SO₂ أيونات الكروم البرتقالية إلى كبريتات الكروم III الخضراء." },
+      { q: "الغاز ذو الرائحة الكريهة الذي يسود ورقة مبللة بمحلول أسيتات الرصاص مكوناً <span class='chem-formula'>PbS</span> يتصاعد من أملاح:", options: [{ text: "<span class='balloon-text-ar'>الكبريتيد</span>" }, { text: "<span class='balloon-text-ar'>الكبريتيت</span>" }, { text: "<span class='balloon-text-ar'>النيتريت</span>" }], correct: 0, exp: "غاز كبريتيد الهيدروجين H₂S المتصاعد من أملاح الكبريتيد يكون راسب PbS الأسود." },
+      { q: "غاز عديم اللون يتحول عند فوهة الأنبوبة إلى لون بني محمر بتكوين <span class='chem-formula'>NO<sub>2</sub></span> هو:", options: [{ text: "<span class='chem-formula'>NO</span>" }, { text: "<span class='chem-formula'>HBr</span>" }, { text: "<span class='chem-formula'>HI</span>" }], correct: 0, exp: "يتأكسد غاز أكسيد النيتريك NO بأكسجين الهواء عند الفوهة مكوناً غاز NO₂ البني المحمر." },
+      { q: "عند تفاعل غاز <span class='chem-formula'>HCl</span> مع ساق زجاجية مبللة بمحلول النشادر تتكون سحب بيضاء من:", options: [{ text: "<span class='chem-formula'>NH<sub>4</sub>Cl</span>" }, { text: "<span class='chem-formula'>CaCO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>AlCl<sub>3</sub></span>" }], correct: 0, exp: "يتحد غاز HCl مع بخار النشادر NH₃ مكوناً ملح كلوريد الأمونيوم الصلب كسحب بيضاء." },
+      { q: "يتأكسد غاز <span class='chem-formula'>HBr</span> جزئياً بفعل حمض الكبريتيك المركز وتنفصل عنه أبخرة:", options: [{ text: "<span class='balloon-text-ar'>برتقالية حمراء</span>" }, { text: "<span class='balloon-text-ar'>بنفسجية</span>" }, { text: "<span class='balloon-text-ar'>بنية حمراء</span>" }], correct: 0, exp: "أبخرة البروم Br₂ المتصاعدة تكون ذات لون برتقالي محمر وتصفر النشا." },
+      { q: "الأبخرة التي تسبب اصفرار ورقة مبللة بالنشا هي أبخرة:", options: [{ text: "<span class='balloon-text-ar'>البروم</span> <span class='chem-formula'>Br<sub>2</sub></span>" }, { text: "<span class='balloon-text-ar'>اليود</span> <span class='chem-formula'>I<sub>2</sub></span>" }, { text: "<span class='balloon-text-ar'>ثاني أكسيد النيتروجين</span>" }], correct: 0, exp: "أبخرة البروم تصفر محلول النشا بينما أبخرة اليود تزرقها." },
+      { q: "غاز يتأكسد جزء منه بفعل حمض الكبريتيك وتنفصل منه أبخرة بنفسجية هو:", options: [{ text: "<span class='chem-formula'>HI</span>" }, { text: "<span class='chem-formula'>HBr</span>" }, { text: "<span class='chem-formula'>HCl</span>" }], correct: 0, exp: "يوديد الهيدروجين HI يتأكسد بحمض الكبريتيك وتنفصل عنه أبخرة اليود البنفسجية." },
+      { q: "تسبب أبخرة اليود (<span class='chem-formula'>I<sub>2</sub></span>) زرقة ورقة مبللة بمحلول:", options: [{ text: "<span class='balloon-text-ar'>النشا</span>" }, { text: "<span class='balloon-text-ar'>أسيتات الرصاص</span>" }, { text: "<span class='balloon-text-ar'>النشادر</span>" }], correct: 0, exp: "أبخرة اليود تتفاعل نوعياً مع النشا معطية لوناً أزرق داكناً." },
+      { q: "تتصاعد الأبخرة البنية الحمراء لغاز <span class='chem-formula'>NO<sub>2</sub></span> من أملاح النترات، وتزداد كثافتها عند إضافة:", options: [{ text: "<span class='balloon-text-ar'>خراطة النحاس</span>" }, { text: "<span class='balloon-text-ar'>برادة حديد</span>" }, { text: "<span class='balloon-text-ar'>ساق مبللة بالنشادر</span>" }], correct: 0, exp: "يتفاعل النحاس مع حمض النيتريك المركز منتجاً كميات إضافية من أبخرة NO₂." },
+      { q: "يتشابه ملح الكربونات مع ملح البيكربونات في تصاعد غاز:", options: [{ text: "<span class='balloon-text-ar'>ثاني أكسيد الكربون</span>" }, { text: "<span class='balloon-text-ar'>ثاني أكسيد الكبريت</span>" }, { text: "<span class='balloon-text-ar'>كبريتيد الهيدروجين</span>" }], correct: 0, exp: "كلاهما يشتق من حمض الكربونيك H₂CO₃ وينتج CO₂ عند التفاعل مع الأحماض." },
+      { q: "الراسب الأبيض المتكون عند إمرار غاز <span class='chem-formula'>CO<sub>2</sub></span> في ماء الجير الرائق لفترة قصيرة هو:", options: [{ text: "<span class='chem-formula'>CaCO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>Ca(HCO<sub>3</sub>)<sub>2</sub></span>" }, { text: "<span class='chem-formula'>CaSO<sub>4</sub></span>" }], correct: 0, exp: "يتكون كربونات الكالسيوم التي لا تذوب في الماء إلا إذا استمر إمرار الغاز لتتحول إلى بيكربونات." },
+      { q: "يتصاعد غاز <span class='chem-formula'>SO<sub>2</sub></span> ذو الرائحة النفاذة عند الكشف عن أملاح:", options: [{ text: "<span class='balloon-text-ar'>الكبريتيت والثيوكبريتات</span>" }, { text: "<span class='balloon-text-ar'>الكبريتيد والنيتريت</span>" }, { text: "<span class='balloon-text-ar'>النترات والكلوريد</span>" }], correct: 0, exp: "ينتج غاز SO₂ النفاذ مع كلا الأنيونين، مع انفصال راسب أصفر في الثيوكبريتات." },
+      { q: "المادة الخضراء الناتجة عن أكسدة غاز <span class='chem-formula'>SO<sub>2</sub></span> بواسطة ثاني كرومات البوتاسيوم هي:", options: [{ text: "<span class='chem-formula'>Cr<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub></span>" }, { text: "<span class='chem-formula'>K<sub>2</sub>SO<sub>4</sub></span>" }, { text: "<span class='chem-formula'>CrO<sub>3</sub></span>" }], correct: 0, exp: "تختزل مركبات الكروم VI البرتقالية إلى كبريتات الكروم III خضراء اللون." },
+      { q: "يتكون راسب أسود نتيجة تفاعل غاز <span class='chem-formula'>H<sub>2</sub>S</span> مع:", options: [{ text: "<span class='balloon-text-ar'>أسيتات الرصاص</span>" }, { text: "<span class='balloon-text-ar'>هيدروكسيد الكالسيوم</span>" }, { text: "<span class='balloon-text-ar'>ثاني كرومات البوتاسيوم</span>" }], correct: 0, exp: "يتكون كبريتيد الرصاص II ذو اللون الأسود (PbS)." },
+      { q: "غاز أكسيد النيتريك (<span class='chem-formula'>NO</span>) المتصاعد من أملاح النيتريت يتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>غاز عديم اللون</span>" }, { text: "<span class='balloon-text-ar'>غاز بني محمر</span>" }, { text: "<span class='balloon-text-ar'>أبخرة برتقالية</span>" }], correct: 0, exp: "NO غاز عديم اللون، ويصبح بنياً محمراً فقط عند ملامسة الأكسجين عند فوهة الأنبوبة." },
+      { q: "الغاز عديم اللون الذي يكون سحباً بيضاء عند تقريبه من ساق زجاجية مبللة بمحلول النشادر يتصاعد من أملاح:", options: [{ text: "<span class='balloon-text-ar'>الكلوريد</span>" }, { text: "<span class='balloon-text-ar'>البروميد</span>" }, { text: "<span class='balloon-text-ar'>اليوديد</span>" }], correct: 0, exp: "يتصاعد غاز HCl عديم اللون ويكوّن NH₄Cl مع النشادر." },
+      { q: "يتشابه الغازان <span class='chem-formula'>HBr</span> و <span class='chem-formula'>HI</span> في أن كليهما:", options: [{ text: "<span class='balloon-text-ar'>عديم اللون ويتأكسد بحمض الكبريتيك</span>" }, { text: "<span class='balloon-text-ar'>يسببان زرقة ورقة النشا</span>" }, { text: "<span class='balloon-text-ar'>يكونان سحباً بيضاء مع النشادر</span>" }], correct: 0, exp: "كلاهما غازات عديمة اللون تتأكسد جزئياً بواسطة حمض الكبريتيك المركز." },
+      { q: "ينتج غاز <span class='chem-formula'>NO<sub>2</sub></span> ذو الأبخرة البنية الحمراء مباشرة من تحلل حمض النيتريك المتكون من أملاح:", options: [{ text: "<span class='balloon-text-ar'>النترات</span>" }, { text: "<span class='balloon-text-ar'>النيتريت</span>" }, { text: "<span class='balloon-text-ar'>الكبريتيت</span>" }], correct: 0, exp: "حمض النيتريك الناتج ينحل بالحرارة مباشرة ليعطي NO₂ داخل الأنبوبة." },
+      { q: "الكاشف المستخدم للتأكد من تصاعد غاز ثاني أكسيد الكربون (<span class='chem-formula'>CO<sub>2</sub></span>) هو:", options: [{ text: "<span class='balloon-text-ar'>ماء الجير الرائق</span>" }, { text: "<span class='balloon-text-ar'>محلول النشادر</span>" }, { text: "<span class='balloon-text-ar'>أسيتات الرصاص</span>" }], correct: 0, exp: "ماء الجير الرائق Ca(OH)₂ يتعكر نتيجة تكوّن CaCO₃." },
+      { q: "يتشابه ملحا الكبريتيت والثيوكبريتات في أن التفاعل مع حمض <span class='chem-formula'>HCl</span> ينتج عنهما غاز:", options: [{ text: "<span class='chem-formula'>SO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>CO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>H<sub>2</sub>S</span>" }], correct: 0, exp: "كلاهما يحرر غاز ثاني أكسيد الكبريت SO₂ النفاذ." },
+      { q: "اللون البني المحمر المتكون عند فوهة الأنبوبة في حالة أملاح النيتريت يرجع إلى تكون غاز:", options: [{ text: "<span class='chem-formula'>NO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>NO</span>" }, { text: "<span class='chem-formula'>N<sub>2</sub>O</span>" }], correct: 0, exp: "يتأكسد غاز NO المتصاعد إلى NO₂ البني المحمر بفعل أكسجين الهواء الجوي." },
+      { q: "عند تعريض ساق مبللة بمحلول النشادر لغاز <span class='chem-formula'>HCl</span> تتصاعد سحب بيضاء، لون هذا الغاز قبل التفاعل هو:", options: [{ text: "<span class='balloon-text-ar'>عديم اللون</span>" }, { text: "<span class='balloon-text-ar'>بني محمر</span>" }, { text: "<span class='balloon-text-ar'>أصفر باهت</span>" }], correct: 0, exp: "غاز كلوريد الهيدروجين HCl عديم اللون في حالته الغازية النقية." },
+      { q: "الأبخرة البرتقالية الحمراء الناتجة عن تأكسد غاز بروميد الهيدروجين تتكون من:", options: [{ text: "<span class='chem-formula'>Br<sub>2</sub></span>" }, { text: "<span class='chem-formula'>I<sub>2</sub></span>" }, { text: "<span class='chem-formula'>NO<sub>2</sub></span>" }], correct: 0, exp: "تتطاير أبخرة عنصر البروم Br₂ ذات اللون البرتقالي المحمر." },
+      { q: "نواتج تأكسد غاز <span class='chem-formula'>HI</span> ينفصل عنه أبخرة لونها:", options: [{ text: "<span class='balloon-text-ar'>بنفسجي</span>" }, { text: "<span class='balloon-text-ar'>برتقالي محمر</span>" }, { text: "<span class='balloon-text-ar'>بني محمر</span>" }], correct: 0, exp: "تتطاير أبخرة اليود I₂ ذات اللون البنفسجي المميز." },
+      { q: "التغير اللوني الحادث لورقة مبللة بمحلول النشا عند تعرضها لأبخرة اليود (<span class='chem-formula'>I<sub>2</sub></span>) هو:", options: [{ text: "<span class='balloon-text-ar'>الزرقة</span>" }, { text: "<span class='balloon-text-ar'>الاصفرار</span>" }, { text: "<span class='balloon-text-ar'>الاحمرار</span>" }], correct: 0, exp: "اليود مع النشا يعطي لوناً أزرق كاشفاً." },
+      { q: "أي من الغازات التالية يتميز برائحة كريهة ويسود ورقة أسيتات الرصاص:", options: [{ text: "<span class='chem-formula'>H<sub>2</sub>S</span>" }, { text: "<span class='chem-formula'>HCl</span>" }, { text: "<span class='chem-formula'>SO<sub>2</sub></span>" }], correct: 0, exp: "كبريتيد الهيدروجين H₂S له رائحة تشبه البيض الفاسد ويسود أسيتات الرصاص." },
+      { q: "الملح الذي يتصاعد منه غاز يتأكسد جزئياً ليعطي أبخرة برتقالية تصفر ورقة مبللة بالنشا هو ملح:", options: [{ text: "<span class='balloon-text-ar'>البروميد</span>" }, { text: "<span class='balloon-text-ar'>اليوديد</span>" }, { text: "<span class='balloon-text-ar'>الكلوريد</span>" }], correct: 0, exp: "أملاح البروميد تنتج غاز HBr الذي يتأكسد ليعطي أبخرة البروم Br₂." },
+      { q: "عند الكشف عن أملاح النترات تزداد كثافة الأبخرة البنية الحمراء المتصاعدة بإضافة:", options: [{ text: "<span class='balloon-text-ar'>خراطة النحاس</span>" }, { text: "<span class='balloon-text-ar'>ساق مبللة بالنشادر</span>" }, { text: "<span class='balloon-text-ar'>ماء الجير الرائق</span>" }], correct: 0, exp: "النحاس يختزل حمض النيتريك الزائد ويحرر كميات أكبر من غاز NO₂." },
+      { q: "يتم التمييز بين غازي <span class='chem-formula'>CO<sub>2</sub></span> و <span class='chem-formula'>SO<sub>2</sub></span> باستخدام ورقة مبللة بمحلول:", options: [{ text: "<span class='balloon-text-ar'>ثاني كرومات البوتاسيوم</span>" }, { text: "<span class='balloon-text-ar'>النشا</span>" }, { text: "<span class='balloon-text-ar'>كلوريد الأمونيوم</span>" }], correct: 0, exp: "SO₂ يخضر لون ثاني كرومات البوتاسيوم المحمضة بينما لا يتفاعل CO₂ معها." },
+      { q: "الغاز الذي يخضر لون محلول ثاني كرومات البوتاسيوم البرتقالي هو:", options: [{ text: "<span class='chem-formula'>SO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>CO<sub>2</sub></span>" }, { text: "<span class='chem-formula'>NO<sub>2</sub></span>" }], correct: 0, exp: "بسبب تكون كبريتات الكروم III خضراء اللون بفعل اختزال SO₂." },
+      { q: "الصيغة الكيميائية لمركب السحب البيضاء المتكونة عند فوهة الأنبوبة مع غاز الكلوريد هي:", options: [{ text: "<span class='chem-formula'>NH<sub>4</sub>Cl</span>" }, { text: "<span class='chem-formula'>CaCO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>NaCl</span>" }], correct: 0, exp: "كلوريد الأمونيوم NH₄Cl الناتج من تفاعل غازي النشادر وكلوريد الهيدروجين." },
+      { q: "يتأكسد غاز بروميد الهيدروجين (<span class='chem-formula'>HBr</span>) وغاز يوديد الهيدروجين (<span class='chem-formula'>HI</span>) بفعل حمض:", options: [{ text: "<span class='balloon-text-ar'>الكبريتيك المركز</span>" }, { text: "<span class='balloon-text-ar'>الهيدروكلوريك المخفف</span>" }, { text: "<span class='balloon-text-ar'>النيتريك المخفف</span>" }], correct: 0, exp: "حمض الكبريتيك المركز الساخن عامل مؤكسد قوي يؤكسد هاليدات الهيدروجين الثقيلة." },
+      { q: "الأبخرة التي تتصاعد باللون البرتقالي المحمر وتسبب اصفرار ورقة النشا تنتمي إلى عنصر:", options: [{ text: "<span class='balloon-text-ar'>البروم</span>" }, { text: "<span class='balloon-text-ar'>اليود</span>" }, { text: "<span class='balloon-text-ar'>الكلور</span>" }], correct: 0, exp: "البروم Br₂ يمتلك لوناً برتقالياً محمراً مميزاً في الحالة البخارية." },
+      { q: "غاز عديم اللون يتحول إلى أبخرة بنفسجية عند تسخينه مع حمض الكبريتيك المركز هو:", options: [{ text: "<span class='chem-formula'>HI</span>" }, { text: "<span class='chem-formula'>HBr</span>" }, { text: "<span class='chem-formula'>HCl</span>" }], correct: 0, exp: "غاز HI يتأكسد بحمض الكبريتيك ويحرر اليود I₂ البنفسجي." },
+      { q: "يرجع تسويد الورقة المبللة بأسيتات الرصاص عند تعرضها لغاز <span class='chem-formula'>H<sub>2</sub>S</span> إلى تكون مركب:", options: [{ text: "<span class='balloon-text-ar'>كبريتيد الرصاص</span>" }, { text: "<span class='balloon-text-ar'>كبريتات الرصاص</span>" }, { text: "<span class='balloon-text-ar'>كربونات الرصاص</span>" }], correct: 0, exp: "كبريتيد الرصاص PbS راسب أسود لا يذوب في الماء." },
+      { q: "تظهر الأبخرة البنية الحمراء لغاز <span class='chem-formula'>NO<sub>2</sub></span> داخل الأنبوبة مباشرة عند تسخين حمض الكبريتيك مع ملح:", options: [{ text: "<span class='balloon-text-ar'>النترات</span>" }, { text: "<span class='balloon-text-ar'>النيتريت</span>" }, { text: "<span class='balloon-text-ar'>الكبريتيت</span>" }], correct: 0, exp: "ينتج حمض النيتريك الذي يتفكك بالحرارة مباشرة داخل الأنبوبة." },
+      { q: "عند الكشف عن أنيون النيتريت، يتصاعد غاز عديم اللون يتأكسد إلى بني محمر عند فوهة الأنبوبة بفعل:", options: [{ text: "<span class='balloon-text-ar'>أكسجين الهواء الجوي</span>" }, { text: "<span class='balloon-text-ar'>ماء الجير</span>" }, { text: "<span class='balloon-text-ar'>بخار الماء</span>" }], correct: 0, exp: "يتأكسد غاز NO تلقائياً بمجرد لقائه أكسجين الهواء الجوي." },
+      { q: "المشاهدة المشتركة بين تعريض ورقة مبللة بالنشا لأبخرة البروم وأبخرة اليود هي:", options: [{ text: "<span class='balloon-text-ar'>حدوث تغير لوني في ورقة النشا</span>" }, { text: "<span class='balloon-text-ar'>تكون سحب بيضاء</span>" }, { text: "<span class='balloon-text-ar'>تصاعد غاز نفاذ الرائحة</span>" }], correct: 0, exp: "كلاهما يحدث تأثيراً لونياً على النشا (البروم يصفر واليود يزرق)." }
+    ],
+
+    // المستوى الثاني: 30 سؤالاً كاملاً
+    level2: [
+      { q: "جميع كربونات الفلزات لا تذوب في الماء ما عدا كربونات:", options: [{ text: "<span class='balloon-text-ar'>الصوديوم والبوتاسيوم والأمونيوم</span>" }, { text: "<span class='balloon-text-ar'>الكالسيوم والماغنسيوم</span>" }, { text: "<span class='balloon-text-ar'>الحديد والنحاس</span>" }], correct: 0, exp: "جميع أملاح Na⁺ و K⁺ و NH₄⁺ تذوب في الماء بلا استثناء." },
+      { q: "تتميز جميع كربونات الفلزات بأنها:", options: [{ text: "<span class='balloon-text-ar'>تذوب في الأحماض</span>" }, { text: "<span class='balloon-text-ar'>تذوب في الماء</span>" }, { text: "<span class='balloon-text-ar'>لا تتفاعل مع الأحماض</span>" }], correct: 0, exp: "تتفاعل الكربونات مع الأحماض المختلفة وتذوب مصحوبة بفوران وتصاعد CO₂." },
+      { q: "الأنيون الذي لا يكوّن أي رواسب وجميع أملاحه تذوب في الأحماض والماء هو:", options: [{ text: "<span class='balloon-text-ar'>البيكربونات</span>" }, { text: "<span class='balloon-text-ar'>الكربونات</span>" }, { text: "<span class='balloon-text-ar'>الفوسفات</span>" }], correct: 0, exp: "جميع أملاح البيكربونات قابلة للذوبان في الماء ولا ترسب أي كاتيون." },
+      { q: "لون راسب كبريتيد الفضة (<span class='chem-formula'>Ag<sub>2</sub>S</span>) هو:", options: [{ text: "<span class='balloon-text-ar'>أسود</span>" }, { text: "<span class='balloon-text-ar'>أبيض</span>" }, { text: "<span class='balloon-text-ar'>أصفر</span>" }], correct: 0, exp: "كبريتيد الفضة Ag₂S راسب أسود مميز ناتج عن تفاعل نترات الفضة مع الكبريتيد." },
+      { q: "الراسب الأسود الذي يذوب في حمض النيتريك الساخن هو:", options: [{ text: "<span class='chem-formula'>CuS</span>" }, { text: "<span class='chem-formula'>PbSO<sub>4</sub></span>" }, { text: "<span class='chem-formula'>CaSO<sub>4</sub></span>" }], correct: 0, exp: "يذوب كبريتيد النحاس II الأسود في حمض النيتريك الساخن بالتأكسد." },
+      { q: "يتكون راسب أبيض يسود بالتسخين عند تفاعل نترات الفضة مع ملح:", options: [{ text: "<span class='balloon-text-ar'>الكبريتيت</span>" }, { text: "<span class='balloon-text-ar'>الكبريتيد</span>" }, { text: "<span class='balloon-text-ar'>الثيوكبريتات</span>" }], correct: 0, exp: "كبريتيت الفضة Ag₂SO₃ راسب أبيض ينحل بالتسخين إلى Ag₂S الأسود." },
+      { q: "الصيغة الكيميائية لراسب كبريتيت الفضة الأبيض هي:", options: [{ text: "<span class='chem-formula'>Ag<sub>2</sub>SO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>Ag<sub>2</sub>S</span>" }, { text: "<span class='chem-formula'>Ag<sub>2</sub>SO<sub>4</sub></span>" }], correct: 0, exp: "أنيون الكبريتيت تكافؤه ثنائي والفضة أحادي التكافؤ." },
+      { q: "عند تفاعل أملاح الثيوكبريتات مع حمض <span class='chem-formula'>HCl</span> المخفف يظهر راسب أصفر معلق من:", options: [{ text: "<span class='balloon-text-ar'>الكبريت</span>" }, { text: "<span class='balloon-text-ar'>اليود</span>" }, { text: "<span class='balloon-text-ar'>كبريتيد الفضة</span>" }], correct: 0, exp: "ينفصل الكبريت S في صورته العنصرية الصلبة كمعلق أصفر." },
+      { q: "من الأنيونات التي لا تكون رواسب في المنهج إطلاقاً:", options: [{ text: "<span class='balloon-text-ar'>النيتريت والنترات</span>" }, { text: "<span class='balloon-text-ar'>الكبريتات والفوسفات</span>" }, { text: "<span class='balloon-text-ar'>الكلوريد والبروميد</span>" }], correct: 0, exp: "جميع أملاح النترات NO₃⁻ والنيتريت NO₂⁻ قابلة للذوبان في الماء." },
+      { q: "راسب كلوريد الفضة (<span class='chem-formula'>AgCl</span>) يتميز بأنه راسب أبيض:", options: [{ text: "<span class='balloon-text-ar'>يذوب سريعاً في النشادر</span>" }, { text: "<span class='balloon-text-ar'>يذوب ببطء في النشادر</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب في النشادر</span>" }], correct: 0, exp: "يذوب في محلول النشادر المركز سريعاً مكوناً مركب الفضة الأمونياتي الذائب." },
+      { q: "عند تعرض راسب كلوريد الفضة (<span class='chem-formula'>AgCl</span>) للضوء فإن لونه يصير:", options: [{ text: "<span class='balloon-text-ar'>بنفسجياً</span>" }, { text: "<span class='balloon-text-ar'>داكناً</span>" }, { text: "<span class='balloon-text-ar'>أصفر</span>" }], correct: 0, exp: "يتحلل ضوئياً وتتحرر حبيبات الفضة الدقيقة معطية اللون البنفسجي." },
+      { q: "الصيغة الكيميائية لكلوريد الزئبق I المترسب هي:", options: [{ text: "<span class='chem-formula'>Hg<sub>2</sub>Cl<sub>2</sub></span>" }, { text: "<span class='chem-formula'>HgCl<sub>2</sub></span>" }, { text: "<span class='chem-formula'>HgCl</span>" }], correct: 0, exp: "أيون الزئبق الأحادي يوجد دائماً في صورة ثنائية الصيغة Hg₂²⁺." },
+      { q: "راسب بروميد الفضة (<span class='chem-formula'>AgBr</span>) لونه:", options: [{ text: "<span class='balloon-text-ar'>أبيض مصفر</span>" }, { text: "<span class='balloon-text-ar'>أبيض</span>" }, { text: "<span class='balloon-text-ar'>أصفر</span>" }], correct: 0, exp: "AgBr راسب أبيض مصفر يذوب ببطء في محلول النشادر." },
+      { q: "معدل ذوبان راسب بروميد الفضة (<span class='chem-formula'>AgBr</span>) في محلول النشادر:", options: [{ text: "<span class='balloon-text-ar'>يذوب ببطء</span>" }, { text: "<span class='balloon-text-ar'>يذوب سريعاً</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب إطلاقاً</span>" }], correct: 0, exp: "ذوبانية بروميد الفضة في النشادر متوسطة وبطيئة مقارنة بالكلوريد." },
+      { q: "يتحول لون راسب بروميد الفضة عند تعرضه للضوء إلى اللون:", options: [{ text: "<span class='balloon-text-ar'>الداكن</span>" }, { text: "<span class='balloon-text-ar'>البنفسجي</span>" }, { text: "<span class='balloon-text-ar'>الأخضر</span>" }], correct: 0, exp: "يتأثر بالضوء ويصير داكناً تدريجياً." },
+      { q: "الراسب الأصفر الذي لا يذوب في محلول النشادر هو:", options: [{ text: "<span class='balloon-text-ar'>يوديد الفضة</span> <span class='chem-formula'>AgI</span>" }, { text: "<span class='balloon-text-ar'>فوسفات الفضة</span> <span class='chem-formula'>Ag<sub>3</sub>PO<sub>4</sub></span>" }, { text: "<span class='balloon-text-ar'>بروميد الفضة</span> <span class='chem-formula'>AgBr</span>" }], correct: 0, exp: "يوديد الفضة AgI أصفر ولا يذوب إطلاقاً في محلول النشادر." },
+      { q: "الراسب الأصفر الذي يذوب في محلول النشادر وحمض النيتريك هو:", options: [{ text: "<span class='balloon-text-ar'>فوسفات الفضة</span> <span class='chem-formula'>Ag<sub>3</sub>PO<sub>4</sub></span>" }, { text: "<span class='balloon-text-ar'>يوديد الفضة</span> <span class='chem-formula'>AgI</span>" }, { text: "<span class='balloon-text-ar'>كبريتيد الفضة</span> <span class='chem-formula'>Ag<sub>2</sub>S</span>" }], correct: 0, exp: "فوسفات الفضة Ag₃PO₄ راسب أصفر يذوب في كل من النشادر وحمض النيتريك." },
+      { q: "يمكن التمييز عملياً بين يوديد الفضة وفوسفات الفضة باستخدام محلول:", options: [{ text: "<span class='balloon-text-ar'>النشادر</span>" }, { text: "<span class='balloon-text-ar'>ماء الجير</span>" }, { text: "<span class='balloon-text-ar'>كبريتات النحاس</span>" }], correct: 0, exp: "النشادر يذيب فوسفات الفضة ولا يذيب يوديد الفضة إطلاقاً." },
+      { q: "راسب كبريتات الباريوم (<span class='chem-formula'>BaSO<sub>4</sub></span>) لونه أبيض ويتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>لا يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>يذوب بالماء الساخن</span>" }], correct: 0, exp: "BaSO₄ راسب أبيض خامل لا يذوب في حمض الهيدروكلوريك المخفف." },
+      { q: "راسب فوسفات الباريوم <span class='chem-formula'>Ba<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub></span> لونه أبيض ويتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>يذوب ببطء بالنشادر</span>" }], correct: 0, exp: "فوسفات الباريوم يذوب في الأحماض المخففة مثل حمض HCl." },
+      { q: "للتمييز بين راسب كبريتات الباريوم وفوسفات الباريوم نستخدم:", options: [{ text: "<span class='balloon-text-ar'>حمض</span> <span class='chem-formula'>HCl</span> <span class='balloon-text-ar'>المخفف</span>" }, { text: "<span class='balloon-text-ar'>الضوء</span>" }, { text: "<span class='balloon-text-ar'>ماء الجير الرائق</span>" }], correct: 0, exp: "يذيب حمض HCl فوسفات الباريوم بينما تظل كبريتات الباريوم مترسبة." },
+      { q: "راسب أبيض يتكون مع أنيون الكبريتات هو:", options: [{ text: "<span class='balloon-text-ar'>كبريتات الكالسيوم</span>" }, { text: "<span class='balloon-text-ar'>كبريتات النحاس</span>" }, { text: "<span class='balloon-text-ar'>كبريتات البوتاسيوم</span>" }], correct: 0, exp: "CaSO₄ راسب أبيض شحيح الذوبان في الماء." },
+      { q: "مركب <span class='chem-formula'>PbSO<sub>4</sub></span> عبارة عن راسب لونه:", options: [{ text: "<span class='balloon-text-ar'>أبيض</span>" }, { text: "<span class='balloon-text-ar'>أسود</span>" }, { text: "<span class='balloon-text-ar'>أصفر</span>" }], correct: 0, exp: "كبريتات الرصاص II راسب أبيض يتكون عند تفاعل أملاح الرصاص مع الكبريتات." },
+      { q: "عند إضافة محلول هيدروكسيد الصوديوم إلى كاتيون الألومنيوم يتكون راسب أبيض جيلاتيني صيغته:", options: [{ text: "<span class='chem-formula'>Al(OH)<sub>3</sub></span>" }, { text: "<span class='chem-formula'>Fe(OH)<sub>2</sub></span>" }, { text: "<span class='chem-formula'>Fe(OH)<sub>3</sub></span>" }], correct: 0, exp: "هيدروكسيد الألومنيوم Al(OH)₃ راسب أبيض جيلاتيني متردد." },
+      { q: "الراسب الأبيض الجيلاتيني <span class='chem-formula'>Al(OH)<sub>3</sub></span> يذوب في الأحماض وأيضاً يذوب في وفرة من:", options: [{ text: "<span class='chem-formula'>NaOH</span>" }, { text: "<span class='balloon-text-ar'>حمض الكبريتيك المركز</span>" }, { text: "<span class='balloon-text-ar'>محلول النشادر</span>" }], correct: 0, exp: "يذوب في NaOH لتكون ميتا ألومينات الصوديوم الذائبة في الماء." },
+      { q: "راسب هيدروكسيد الحديد II وصيغته <span class='chem-formula'>Fe(OH)<sub>2</sub></span> يتميز بلونه:", options: [{ text: "<span class='balloon-text-ar'>الأبيض المخضر</span>" }, { text: "<span class='balloon-text-ar'>الأبيض المصفر</span>" }, { text: "<span class='balloon-text-ar'>البني المحمر</span>" }], correct: 0, exp: "Fe(OH)₂ لونه أبيض مخضر ويتحول في الهواء تدريجياً بالتأكسد." },
+      { q: "الراسب ذو اللون البني المحمر هو:", options: [{ text: "<span class='chem-formula'>Fe(OH)<sub>3</sub></span>" }, { text: "<span class='chem-formula'>Fe(OH)<sub>2</sub></span>" }, { text: "<span class='chem-formula'>Al(OH)<sub>3</sub></span>" }], correct: 0, exp: "هيدروكسيد الحديد III راسب جيلاتيني بني محمر يشبه صدأ الحديد." },
+      { q: "جميع رواسب الهيدروكسيدات <span class='chem-formula'>Al(OH)<sub>3</sub></span> و <span class='chem-formula'>Fe(OH)<sub>2</sub></span> و <span class='chem-formula'>Fe(OH)<sub>3</sub></span> تشترك في أنها:", options: [{ text: "<span class='balloon-text-ar'>تذوب في الأحماض المخففة</span>" }, { text: "<span class='balloon-text-ar'>تذوب في</span> <span class='chem-formula'>NaOH</span>" }, { text: "<span class='balloon-text-ar'>ذات لون أبيض</span>" }], correct: 0, exp: "جميع الهيدروكسيدات المترسبة تتفاعل كقواعد وتذوب في الأحماض." },
+      { q: "عند اتحاد كاتيون الرصاص II مع أنيون الكلوريد يتكون راسب صيغته:", options: [{ text: "<span class='chem-formula'>PbCl<sub>2</sub></span>" }, { text: "<span class='chem-formula'>PbSO<sub>4</sub></span>" }, { text: "<span class='chem-formula'>PbS</span>" }], correct: 0, exp: "كلوريد الرصاص II هو راسب أبيض للمجموعة التحليلية الأولى." },
+      { q: "أي من أزواج الأنيونات الآتية لا تكون أي رواسب:", options: [{ text: "<span class='balloon-text-ar'>النترات والبيكربونات</span>" }, { text: "<span class='balloon-text-ar'>الكربونات والفوسفات</span>" }, { text: "<span class='balloon-text-ar'>الكلوريد والكبريتيد</span>" }], correct: 0, exp: "جميع أملاح النترات والبيكربونات تذوب تماماً في الماء." }
+    ],
+
+    // المستوى الثالث: 35 سؤالاً كاملاً
+    level3: [
+      { q: "راسب كبريتيد الفضة (<span class='chem-formula'>Ag<sub>2</sub>S</span>) يتميز بلونه:", options: [{ text: "<span class='balloon-text-ar'>الأسود</span>" }, { text: "<span class='balloon-text-ar'>الأبيض</span>" }, { text: "<span class='balloon-text-ar'>الأصفر</span>" }], correct: 0, exp: "Ag₂S راسب أسود لا يذوب في الماء." },
+      { q: "يتكون راسب أبيض يسود بالتسخين من كبريتيت الفضة وصيغته الكيميائية:", options: [{ text: "<span class='chem-formula'>Ag<sub>2</sub>SO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>Ag<sub>2</sub>S</span>" }, { text: "<span class='chem-formula'>Ag<sub>2</sub>SO<sub>4</sub></span>" }], correct: 0, exp: "Ag₂SO₃ ينحل بالحرارة إلى Ag₂S الأسود وغاز SO₂." },
+      { q: "راسب كلوريد الفضة (<span class='chem-formula'>AgCl</span>) لونه أبيض ويصير بنفسجياً عند تعرضه للـ:", options: [{ text: "<span class='balloon-text-ar'>ضوء</span>" }, { text: "<span class='balloon-text-ar'>تسخين</span>" }, { text: "<span class='balloon-text-ar'>ماء</span>" }], correct: 0, exp: "الضوء يفكك جزيئات السطح ويحرر الفضة متسبباً في اللون البنفسجي." },
+      { q: "قابلية ذوبان راسب كلوريد الفضة (<span class='chem-formula'>AgCl</span>) في محلول النشادر:", options: [{ text: "<span class='balloon-text-ar'>يذوب سريعاً</span>" }, { text: "<span class='balloon-text-ar'>يذوب ببطء</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب إطلاقاً</span>" }], correct: 0, exp: "يذوب فورياً في النشادر المركز لتكون المتراكب الأمونياتي." },
+      { q: "لون راسب بروميد الفضة (<span class='chem-formula'>AgBr</span>) هو:", options: [{ text: "<span class='balloon-text-ar'>أبيض مصفر</span>" }, { text: "<span class='balloon-text-ar'>أبيض</span>" }, { text: "<span class='balloon-text-ar'>أصفر</span>" }], correct: 0, exp: "AgBr لونه أبيض مصفر مميز يفرقه عن كلوريد الفضة الأبيض." },
+      { q: "عند تعرض راسب بروميد الفضة (<span class='chem-formula'>AgBr</span>) للضوء فإنه:", options: [{ text: "<span class='balloon-text-ar'>يصير داكناً</span>" }, { text: "<span class='balloon-text-ar'>يصير بنفسجياً</span>" }, { text: "<span class='balloon-text-ar'>يزول لونه</span>" }], correct: 0, exp: "يتحول لون بروميد الفضة عند تعرضه للضوء إلى لون داكن." },
+      { q: "يذوب راسب بروميد الفضة في محلول النشادر بدرجة:", options: [{ text: "<span class='balloon-text-ar'>بطيئة</span>" }, { text: "<span class='balloon-text-ar'>سريعة</span>" }, { text: "<span class='balloon-text-ar'>منعدمة</span>" }], correct: 0, exp: "يذوب ببطء في محلول النشادر المركز." },
+      { q: "راسب يوديد الفضة (<span class='chem-formula'>AgI</span>) يتميز بأنه راسب أصفر:", options: [{ text: "<span class='balloon-text-ar'>لا يذوب في النشادر</span>" }, { text: "<span class='balloon-text-ar'>يذوب في النشادر</span>" }, { text: "<span class='balloon-text-ar'>يذوب في الماء النقي</span>" }], correct: 0, exp: "AgI شديد الثبات ولا يذوب إطلاقاً في محلول النشادر المركز." },
+      { q: "راسب فوسفات الفضة (<span class='chem-formula'>Ag<sub>3</sub>PO<sub>4</sub></span>) أصفر اللون ويتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>يذوب بالنشادر وحمض النيتريك</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب في النشادر</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب في الأحماض</span>" }], correct: 0, exp: "يذوب بسهولة في محلول النشادر وكذلك في حمض النيتريك." },
+      { q: "يمكن التمييز بين راسبي <span class='chem-formula'>AgI</span> و <span class='chem-formula'>Ag<sub>3</sub>PO<sub>4</sub></span> (كلاهما أصفر) بالذوبان في:", options: [{ text: "<span class='balloon-text-ar'>محلول النشادر</span>" }, { text: "<span class='balloon-text-ar'>الماء المقطر</span>" }, { text: "<span class='balloon-text-ar'>كبريتات النحاس</span>" }], correct: 0, exp: "فوسفات الفضة يذوب في النشادر بينما يوديد الفضة لا يذوب." },
+      { q: "الراسب لكاتيون الزئبق الأحادي (<span class='chem-formula'>Hg<sup>+</sup></span>) مع أنيون الكلوريد صيغته:", options: [{ text: "<span class='chem-formula'>Hg<sub>2</sub>Cl<sub>2</sub></span>" }, { text: "<span class='chem-formula'>HgCl<sub>2</sub></span>" }, { text: "<span class='chem-formula'>HgSO<sub>4</sub></span>" }], correct: 0, exp: "الصيغة الجزيئية لكلوريد الزئبق I المترسب هي Hg₂Cl₂." },
+      { q: "يتكون راسب أسود للرصاص عند تفاعله مع أنيون الكبريتيد صيغته:", options: [{ text: "<span class='chem-formula'>PbS</span>" }, { text: "<span class='chem-formula'>PbSO<sub>4</sub></span>" }, { text: "<span class='chem-formula'>PbCl<sub>2</sub></span>" }], correct: 0, exp: "كبريتيد الرصاص PbS راسب أسود." },
+      { q: "راسب كلوريد الرصاص II المترسب صيغته الكيميائية:", options: [{ text: "<span class='chem-formula'>PbCl<sub>2</sub></span>" }, { text: "<span class='chem-formula'>PbCl</span>" }, { text: "<span class='chem-formula'>PbCl<sub>4</sub></span>" }], correct: 0, exp: "PbCl₂ راسب أبيض يترسب في المجموعة التحليلية الأولى." },
+      { q: "راسب كبريتات الرصاص II وصيغته <span class='chem-formula'>PbSO<sub>4</sub></span> يتميز بلونه:", options: [{ text: "<span class='balloon-text-ar'>الأبيض</span>" }, { text: "<span class='balloon-text-ar'>الأسود</span>" }, { text: "<span class='balloon-text-ar'>الأصفر</span>" }], correct: 0, exp: "كبريتات الرصاص II راسب أبيض اللون." },
+      { q: "يتكون راسب أسود من كبريتيد النحاس II وصيغته <span class='chem-formula'>CuS</span> ويتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>يذوب في حمض النيتريك الساخن</span>" }, { text: "<span class='balloon-text-ar'>يذوب في محلول النشادر</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب في أي حمض</span>" }], correct: 0, exp: "CuS راسب أسود يذوب في حمض النيتريك الساخن بالتأكسد." },
+      { q: "الراسب الأبيض الجيلاتيني لهيدروكسيد الألومنيوم <span class='chem-formula'>Al(OH)<sub>3</sub></span> يذوب في الأحماض وأيضاً في:", options: [{ text: "<span class='balloon-text-ar'>الزيادة من الصودا الكاوية</span>" }, { text: "<span class='balloon-text-ar'>الزيادة من ماء الجير</span>" }, { text: "<span class='balloon-text-ar'>محلول النشادر</span>" }], correct: 0, exp: "يذوب في الزيادة من NaOH لتكون NaAlO₂ الذائبة." },
+      { q: "لون راسب هيدروكسيد الحديد II وصيغته <span class='chem-formula'>Fe(OH)<sub>2</sub></span> هو:", options: [{ text: "<span class='balloon-text-ar'>أبيض مخضر</span>" }, { text: "<span class='balloon-text-ar'>أبيض جيلاتيني</span>" }, { text: "<span class='balloon-text-ar'>بني محمر</span>" }], correct: 0, exp: "Fe(OH)₂ لونه أبيض مخضر." },
+      { q: "راسب هيدروكسيد الحديد III وصيغته <span class='chem-formula'>Fe(OH)<sub>3</sub></span> يتميز بلونه:", options: [{ text: "<span class='balloon-text-ar'>البني المحمر</span>" }, { text: "<span class='balloon-text-ar'>الأبيض المخضر</span>" }, { text: "<span class='balloon-text-ar'>الأصفر الباهت</span>" }], correct: 0, exp: "Fe(OH)₃ راسب جيلاتيني بني محمر." },
+      { q: "تشترك هيدروكسيدات الألومنيوم والحديد II والحديد III في أنها:", options: [{ text: "<span class='balloon-text-ar'>تذوب في الأحماض المخففة</span>" }, { text: "<span class='balloon-text-ar'>تذوب في الصودا الكاوية</span>" }, { text: "<span class='balloon-text-ar'>لها نفس اللون</span>" }], correct: 0, exp: "جميعها رواسب قاعدية تذوب في الأحماض المخففة." },
+      { q: "راسب كربونات الكالسيوم (<span class='chem-formula'>CaCO<sub>3</sub></span>) لونه أبيض ويذوب في الأحماض وأيضاً في:", options: [{ text: "<span class='balloon-text-ar'>الماء المحتوي على</span> <span class='chem-formula'>CO<sub>2</sub></span>" }, { text: "<span class='balloon-text-ar'>محلول الصودا الكاوية</span>" }, { text: "<span class='balloon-text-ar'>محلول النشادر</span>" }], correct: 0, exp: "يتحول إلى بيكربونات الكالسيوم الذائبة بفعل H₂CO₃ المتكون في الماء." },
+      { q: "مركب كبريتات الكالسيوم (<span class='chem-formula'>CaSO<sub>4</sub></span>) عبارة عن راسب لونه:", options: [{ text: "<span class='balloon-text-ar'>أبيض</span>" }, { text: "<span class='balloon-text-ar'>أسود</span>" }, { text: "<span class='balloon-text-ar'>بني محمر</span>" }], correct: 0, exp: "كبريتات الكالسيوم راسب أبيض يتكون مع الكبريتات." },
+      { q: "راسب كبريتات الباريوم (<span class='chem-formula'>BaSO<sub>4</sub></span>) لونه أبيض ويتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>لا يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>يذوب بالماء مع</span> <span class='chem-formula'>CO<sub>2</sub></span>" }], correct: 0, exp: "كبريتات الباريوم لا تذوب في حمض HCl المخفف." },
+      { q: "راسب فوسفات الباريوم <span class='chem-formula'>Ba<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub></span> لونه أبيض ويتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>لا يذوب في حمض</span> <span class='chem-formula'>HCl</span>" }, { text: "<span class='balloon-text-ar'>يذوب بالصودا الكاوية</span>" }], correct: 0, exp: "فوسفات الباريوم تذوب في حمض الهيدروكلوريك المخفف." },
+      { q: "يمكن التمييز بين راسب كبريتات الباريوم وفوسفات الباريوم باستخدام:", options: [{ text: "<span class='balloon-text-ar'>حمض</span> <span class='chem-formula'>HCl</span> <span class='balloon-text-ar'>المخفف</span>" }, { text: "<span class='balloon-text-ar'>محلول النشادر</span>" }, { text: "<span class='balloon-text-ar'>التسخين الشديد</span>" }], correct: 0, exp: "حمض HCl يذيب الفوسفات ولا يذيب الكبريتات." },
+      { q: "أي من الكاتيونات الآتية لا يكون رواسب إطلاقاً مع أي أنيون:", options: [{ text: "<span class='chem-formula'>Na<sup>+</sup></span>" }, { text: "<span class='chem-formula'>Ag<sup>+</sup></span>" }, { text: "<span class='chem-formula'>Cu<sup>2+</sup></span>" }], correct: 0, exp: "جميع أملاح الصوديوم قابلة للذوبان في الماء." },
+      { q: "كاتيون البوتاسيوم (<span class='chem-formula'>K<sup>+</sup></span>) يتميز بأنه:", options: [{ text: "<span class='balloon-text-ar'>لا يكون أي رواسب</span>" }, { text: "<span class='balloon-text-ar'>يكون راسباً أبيض</span>" }, { text: "<span class='balloon-text-ar'>يكون راسباً أصفر</span>" }], correct: 0, exp: "جميع أملاح البوتاسيوم تذوب في الماء ولا ترسب." },
+      { q: "جميع أملاح كاتيون الأمونيوم (<span class='chem-formula'>NH<sub>4</sub><sup>+</sup></span>):", options: [{ text: "<span class='balloon-text-ar'>تذوب بالماء ولا تكون رواسب</span>" }, { text: "<span class='balloon-text-ar'>تكون رواسب بيضاء</span>" }, { text: "<span class='balloon-text-ar'>تكون رواسب سوداء</span>" }], correct: 0, exp: "جميع أملاح الأمونيوم تذوب في الماء." },
+      { q: "كاتيون يكون مع أنيون الكبريتيد راسباً أسود ومع أنيون الكبريتات راسباً أبيض هو:", options: [{ text: "<span class='chem-formula'>Pb<sup>2+</sup></span>" }, { text: "<span class='chem-formula'>Cu<sup>2+</sup></span>" }, { text: "<span class='chem-formula'>Al<sup>3+</sup></span>" }], correct: 0, exp: "PbS راسب أسود و PbSO₄ راسب أبيض." },
+      { q: "عند الكشف عن كاتيون <span class='chem-formula'>Cu<sup>2+</sup></span> فإن الراسب المتكون مع أنيون الكبريتيد يكون لونه:", options: [{ text: "<span class='balloon-text-ar'>أسود</span>" }, { text: "<span class='balloon-text-ar'>أبيض</span>" }, { text: "<span class='balloon-text-ar'>أبيض مخضر</span>" }], correct: 0, exp: "CuS راسب أسود يترسب في وسط حمضي." },
+      { q: "عند إضافة وفرة من هيدروكسيد الصوديوم إلى هيدروكسيد الألومنيوم فإن الراسب:", options: [{ text: "<span class='balloon-text-ar'>يذوب تماماً</span>" }, { text: "<span class='balloon-text-ar'>يتحول لبني محمر</span>" }, { text: "<span class='balloon-text-ar'>لا يتأثر</span>" }], correct: 0, exp: "يذوب بسبب تكوّن ميتا ألومينات الصوديوم الذائبة في الماء." },
+      { q: "أي من الرواسب التالية يسود عند تعريضه للتسخين:", options: [{ text: "<span class='chem-formula'>Ag<sub>2</sub>SO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>AgCl</span>" }, { text: "<span class='chem-formula'>AgI</span>" }], correct: 0, exp: "كبريتيت الفضة الأبيض يسود بالتسخين لتحوله إلى كبريتيد الفضة." },
+      { q: "الصيغة الكيميائية لراسب فوسفات الباريوم الأبيض هي:", options: [{ text: "<span class='chem-formula'>Ba<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub></span>" }, { text: "<span class='chem-formula'>BaPO<sub>4</sub></span>" }, { text: "<span class='chem-formula'>Ba(PO<sub>4</sub>)<sub>2</sub></span>" }], correct: 0, exp: "تكافؤ الباريوم ثنائي وتكافؤ الفوسفات ثلاثي Ba₃(PO₄)₂." },
+      { q: "الكاتيون الذي يكون راسباً بنياً محمراً مع أنيون الهيدروكسيد هو:", options: [{ text: "<span class='chem-formula'>Fe<sup>3+</sup></span>" }, { text: "<span class='chem-formula'>Fe<sup>2+</sup></span>" }, { text: "<span class='chem-formula'>Al<sup>3+</sup></span>" }], correct: 0, exp: "Fe(OH)₃ راسب جيلاتيني بني محمر." },
+      { q: "الراسب المتكون عند إضافة أنيون الكربونات إلى كاتيون الكالسيوم صيغته:", options: [{ text: "<span class='chem-formula'>CaCO<sub>3</sub></span>" }, { text: "<span class='chem-formula'>CaSO<sub>4</sub></span>" }, { text: "<span class='chem-formula'>Ca(OH)<sub>2</sub></span>" }], correct: 0, exp: "كربونات الكالسيوم CaCO₃ راسب أبيض يذوب في الأحماض." },
+      { q: "الثلاثة كاتيونات التي لا تكون أي رواسب في المنهج إطلاقاً هي:", options: [{ text: "<span class='chem-formula'>Na<sup>+</sup> , K<sup>+</sup> , NH<sub>4</sub><sup>+</sup></span>" }, { text: "<span class='chem-formula'>Ag<sup>+</sup> , Pb<sup>2+</sup> , Hg<sup>+</sup></span>" }, { text: "<span class='chem-formula'>Ca<sup>2+</sup> , Ba<sup>2+</sup> , Cu<sup>2+</sup></span>" }], correct: 0, exp: "جميع أملاح الصوديوم والبوتاسيوم والأمونيوم ذائبة دائماً." }
+    ]
+  };
+
+  const moralAdvices = [
+    "«التواضع عند الفهم وحسن الخلق مع الزملاء والمعلمين زكاة العلم الحقيقية.»",
+    "«من سلك طريقاً يلتمس فيه علماً سهل الله له به طريقاً إلى الجنة.»",
+    "«بر الوالدين ودعاؤهما هو السر الخفي في كل توفيق وفهم وتفوق.»",
+    "«اجعل نيتك في المذاكرة نفع الأمة وعمارة الأرض لتؤجر على كل دقيقة.»"
+  ];
+
+  let audioCtx = null;
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  function playWrongSound() {
+    try {
+      if (!audioCtx) initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+    } catch(e) {}
+  }
+
+  function playCorrectSound() {
+    try {
+      if (!audioCtx) initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(840, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.2);
+    } catch(e) {}
+  }
+
+  let currentLevel = 1;
+  let qIndexInLevel = 0;
+  let score = 0;
+  let hearts = 7;
+  let consecutiveCorrect = 0;
+  let skipsLeft = 3;
+  let playerName = "بطل الكيمياء";
+  let speedDuration = 12000;
+
+  let levelQuestions = [];
+  let currentQ = null;
+  let animationFrameId = null;
+  let isAnswerLocked = false;
+  let isPaused = false;
+  let currentBalloonElements = [];
+  let wrongAnswersLog = [];
+
+  let progressElapsed = 0;
+  let lastTimestamp = null;
+
+  const balloonColors = ["#16a34a", "#ea580c", "#0284c7", "#d97706"];
+
+  function loadHighScore() {
+    const saved = localStorage.getItem('chemistry_balloon_highscore') || 0;
+    document.getElementById('high-score-val').innerText = saved;
+  }
+  loadHighScore();
+
+  function setAppTheme(theme) {
+    document.body.classList.toggle('light-mode', theme === 'light');
+    document.getElementById('mode-dark-btn').classList.toggle('active', theme === 'dark');
+    document.getElementById('mode-light-btn').classList.toggle('active', theme === 'light');
+    document.getElementById('theme-btn').innerText = theme === 'light' ? '🌙 ليل' : '☀️ نهار';
+  }
+
+  function toggleTheme() {
+    const isLight = document.body.classList.contains('light-mode');
+    setAppTheme(isLight ? 'dark' : 'light');
+  }
+
+  function setGameSpeed(speed) {
+    document.getElementById('speed-slow-btn').classList.toggle('active', speed === 'slow');
+    document.getElementById('speed-med-btn').classList.toggle('active', speed === 'med');
+    document.getElementById('speed-fast-btn').classList.toggle('active', speed === 'fast');
+    
+    if (speed === 'slow') {
+      speedDuration = 12000;
+      document.getElementById('speed-indicator').innerText = "⚡ سرعة: بطيء";
+    } else if (speed === 'med') {
+      speedDuration = 8500;
+      document.getElementById('speed-indicator').innerText = "⚡ سرعة: متوسط";
+    } else {
+      speedDuration = 6000;
+      document.getElementById('speed-indicator').innerText = "⚡ سرعة: سريع";
+    }
+  }
+
+  function shuffle(array) {
+    return [...array].sort(() => Math.random() - 0.5);
+  }
+
+  function showPreloaderScreen() {
+    initAudio();
+    const nameInput = document.getElementById('player-name-input').value.trim();
+    if (nameInput) playerName = nameInput;
+
+    document.getElementById('start-screen').classList.add('hidden');
+    const prepScreen = document.getElementById('prep-screen');
+    prepScreen.classList.remove('hidden');
+
+    const advice = moralAdvices[Math.floor(Math.random() * moralAdvices.length)];
+    document.getElementById('advice-text').innerText = advice;
+
+    setTimeout(() => {
+      prepScreen.classList.add('hidden');
+      initGame();
+    }, 3500);
+  }
+
+  function initGame() {
+    score = 0;
+    hearts = 7;
+    consecutiveCorrect = 0;
+    skipsLeft = 3;
+    currentLevel = 1;
+    wrongAnswersLog = [];
+    isPaused = false;
+    document.getElementById('btn-show-mistakes').classList.add('hidden');
+    document.getElementById('review-modal').classList.add('hidden');
+    loadLevel(currentLevel);
+  }
+
+  function loadLevel(lvl) {
+    currentLevel = lvl;
+    qIndexInLevel = 0;
+    const pool = questionsDB[`level${lvl}`];
+    levelQuestions = shuffle(pool).slice(0, 10);
+    loadQuestion();
+  }
+
+  function updateHUD() {
+    document.getElementById('level-display').innerText = `${currentLevel} / 3`;
+    document.getElementById('score-display').innerText = score;
+    document.getElementById('hearts-display').innerText = '❤️'.repeat(Math.max(0, hearts));
+    document.getElementById('streak-display').innerText = `${consecutiveCorrect}/4`;
+    document.getElementById('skip-btn').innerText = `تخطي (${skipsLeft})`;
+    document.getElementById('q-number-badge').innerText = `سؤال ${qIndexInLevel + 1} / 10`;
+  }
+
+  function togglePauseGame() {
+    if (isAnswerLocked) return;
+    isPaused = !isPaused;
+    const pauseScreen = document.getElementById('pause-screen');
+    const pauseBtn = document.getElementById('pause-btn');
+
+    if (isPaused) {
+      pauseScreen.classList.remove('hidden');
+      pauseBtn.innerText = "▶️ استئناف";
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    } else {
+      pauseScreen.classList.add('hidden');
+      pauseBtn.innerText = "⏸️ إيقاف";
+      lastTimestamp = null;
+      animationFrameId = requestAnimationFrame(stepMovement);
+    }
+  }
+
+  function loadQuestion() {
+    clearStage();
+    isAnswerLocked = false;
+    isPaused = false;
+    document.getElementById('explanation-banner').style.display = 'none';
+
+    if (hearts <= 0) {
+      endGame(false);
+      return;
+    }
+
+    if (qIndexInLevel >= 10) {
+      if (currentLevel < 3) {
+        currentLevel++;
+        loadLevel(currentLevel);
+        return;
+      } else {
+        endGame(true);
+        return;
+      }
+    }
+
+    currentQ = levelQuestions[qIndexInLevel];
+    if (!currentQ) {
+      endGame(true);
+      return;
+    }
+
+    document.getElementById('question-text').innerHTML = currentQ.q;
+    updateHUD();
+    spawnBalloons(currentQ);
+  }
+
+  function clearStage() {
+    const stage = document.getElementById('game-stage');
+    stage.innerHTML = '';
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    currentBalloonElements = [];
+    progressElapsed = 0;
+    lastTimestamp = null;
+  }
+
+  function spawnBalloons(q) {
+    const stage = document.getElementById('game-stage');
+    const stageWidth = stage.clientWidth || 360;
+
+    const optionsData = q.options.map((opt, idx) => ({
+      text: opt.text,
+      isCorrect: idx === q.correct
+    }));
+
+    const shuffledOpts = shuffle(optionsData);
+    const count = shuffledOpts.length;
+    const colWidth = stageWidth / count;
+
+    currentBalloonElements = [];
+    progressElapsed = 0;
+    lastTimestamp = null;
+
+    shuffledOpts.forEach((opt, i) => {
+      const balloon = document.createElement('div');
+      balloon.className = 'balloon';
+      
+      const content = document.createElement('div');
+      content.className = 'balloon-content';
+      content.innerHTML = opt.text;
+      balloon.appendChild(content);
+
+      balloon.style.backgroundColor = balloonColors[i % balloonColors.length];
+
+      const leftPos = Math.max(10, Math.min(stageWidth - 105, (i * colWidth) + ((colWidth - 102) / 2)));
+      balloon.style.left = `${leftPos}px`;
+      
+      balloon.onclick = () => onBalloonClick(opt.isCorrect, balloon);
+
+      stage.appendChild(balloon);
+      currentBalloonElements.push({ el: balloon, isCorrect: opt.isCorrect, offsetDelay: (i % 2) * 20 });
+    });
+
+    animationFrameId = requestAnimationFrame(stepMovement);
+  }
+
+  function stepMovement(timestamp) {
+    if (isAnswerLocked || isPaused) return;
+
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const delta = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+    progressElapsed += delta;
+
+    const progress = progressElapsed / speedDuration;
+    const stage = document.getElementById('game-stage');
+    const stageHeight = stage.clientHeight || 450;
+
+    if (progress < 1) {
+      const currentY = stageHeight - (progress * (stageHeight + 140));
+      currentBalloonElements.forEach(b => {
+        b.el.style.top = `${currentY + b.offsetDelay}px`;
+      });
+      animationFrameId = requestAnimationFrame(stepMovement);
+    } else {
+      onMissedBalloons();
+    }
+  }
+
+  function onBalloonClick(isCorrect, element) {
+    if (isAnswerLocked || isPaused) return;
+    isAnswerLocked = true;
+    cancelAnimationFrame(animationFrameId);
+
+    if (isCorrect) {
+      playCorrectSound();
+      element.style.transform = 'scale(1.35)';
+      element.style.opacity = '0';
+      handleAnswer(true, 500);
+    } else {
+      playWrongSound();
+      element.style.opacity = '0.3';
+      showExplanation();
+      bringCorrectToCenter();
+      recordMistake();
+      handleAnswer(false, 3000);
+    }
+  }
+
+  function onMissedBalloons() {
+    if (isAnswerLocked || isPaused) return;
+    isAnswerLocked = true;
+    cancelAnimationFrame(animationFrameId);
+
+    playWrongSound();
+    showExplanation();
+    bringCorrectToCenter();
+    recordMistake();
+    handleAnswer(false, 3000);
+  }
+
+  function recordMistake() {
+    const correctOpt = currentQ.options[currentQ.correct].text;
+    wrongAnswersLog.push({
+      question: currentQ.q,
+      answer: correctOpt,
+      exp: currentQ.exp || "ملاحظة تدريبية هامة وفقاً لنواتج التعلم بالمنهج."
+    });
+  }
+
+  function showExplanation() {
+    if (currentQ && currentQ.exp) {
+      const banner = document.getElementById('explanation-banner');
+      banner.innerHTML = `💡 <b>التعليل:</b> ${currentQ.exp}`;
+      banner.style.display = 'block';
+    }
+  }
+
+  function bringCorrectToCenter() {
+    currentBalloonElements.forEach(b => {
+      if (b.isCorrect) {
+        b.el.classList.add('highlight-correct', 'center-focus');
+      } else {
+        b.el.classList.add('fade-out');
+      }
+    });
+  }
+
+  function handleAnswer(isCorrect, delay) {
+    if (isCorrect) {
+      score += 10;
+      consecutiveCorrect++;
+      flashQuestionBox(true);
+
+      if (consecutiveCorrect === 4) {
+        if (hearts < 10) hearts++;
+        consecutiveCorrect = 0;
+      }
+    } else {
+      hearts--;
+      consecutiveCorrect = 0;
+      flashQuestionBox(false);
+    }
+
+    updateHUD();
+
+    setTimeout(() => {
+      if (hearts <= 0) {
+        endGame(false);
+      } else {
+        qIndexInLevel++;
+        loadQuestion();
+      }
+    }, delay);
+  }
+
+  function flashQuestionBox(correct) {
+    const box = document.getElementById('question-box');
+    box.style.borderColor = correct ? '#16a34a' : '#ef4444';
+    setTimeout(() => {
+      box.style.borderColor = 'var(--accent)';
+    }, 600);
+  }
+
+  function skipQuestion() {
+    if (skipsLeft > 0 && !isAnswerLocked && !isPaused) {
+      skipsLeft--;
+      clearStage();
+      qIndexInLevel++;
+      loadQuestion();
+    }
+  }
+
+  function endGame(isWin) {
+    clearStage();
+    const endScreen = document.getElementById('end-screen');
+    const endTitle = document.getElementById('end-title');
+    const endPraise = document.getElementById('end-praise');
+    const finalScore = document.getElementById('final-score');
+    const finalHearts = document.getElementById('final-hearts');
+
+    finalScore.innerText = score;
+    finalHearts.innerText = Math.max(0, hearts);
+
+    const currentHigh = parseInt(localStorage.getItem('chemistry_balloon_highscore') || 0);
+    if (score > currentHigh) {
+      localStorage.setItem('chemistry_balloon_highscore', score);
+      loadHighScore();
+    }
+
+    if (isWin) {
+      endTitle.innerText = "🎉 مبروك إتمام التحدي! 🎉";
+      endTitle.style.color = "#16a34a";
+      endPraise.innerText = `أحسنت يا عبقري الكيمياء (${playerName})! أداء أسطوري وتفوق باهر.`;
+    } else {
+      endTitle.innerText = "انتهت المحاولة!";
+      endTitle.style.color = "#ef4444";
+      endPraise.innerText = `أحسنت المحاولة يا (${playerName})! راجع معلوماتك وأخطاءك لتتفوق في المرة القادمة.`;
+    }
+
+    const btnMistakes = document.getElementById('btn-show-mistakes');
+    if (wrongAnswersLog.length > 0) {
+      btnMistakes.classList.remove('hidden');
+      renderMistakesList();
+    } else {
+      btnMistakes.classList.add('hidden');
+    }
+
+    endScreen.classList.remove('hidden');
+  }
+
+  function renderMistakesList() {
+    const container = document.getElementById('review-modal');
+    container.innerHTML = '';
+    wrongAnswersLog.forEach((item, index) => {
+      const el = document.createElement('div');
+      el.className = 'review-item';
+      el.innerHTML = `
+        <div class="review-q"><b>${index + 1}.</b> ${item.question}</div>
+        <div class="review-ans">✅ الإجابة الصحيحة: ${item.answer}</div>
+        <div class="review-exp">💡 <b>التفسير:</b> ${item.exp}</div>
+      `;
+      container.appendChild(el);
+    });
+  }
+
+  function toggleMistakesModal() {
+    const modal = document.getElementById('review-modal');
+    modal.classList.toggle('hidden');
+  }
+
+  function restartGame() {
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+  }
+
+  function shareScore() {
+    const text = `حققت ${score} نقطة وتبقّى معي ${Math.max(0, hearts)} قلوب في لعبة كيمياء الثانوية العامة (أ/ عبد الرحمن عبد الله - 01021779644)! 🧪🎯`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'تحدي الكيمياء',
+        text: text,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('تم نسخ النتيجة ورسالة التحدي بنجاح!');
+    }
+  }
+
+  function captureScreenshot() {
+    const target = document.getElementById('end-card');
+    const isLight = document.body.classList.contains('light-mode');
+    const bgColor = isLight ? '#ffffff' : '#111b36';
+
+    html2canvas(target, { backgroundColor: bgColor, scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `نتيجة_${playerName}_كيمياء.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+</script>
+
+</body>
+</html>
